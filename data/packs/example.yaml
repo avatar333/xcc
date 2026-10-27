@@ -1,0 +1,9 @@
+slug: example-pack
+name: Example Pack
+version: "1.0"
+description: Demonstrates the curated import shape.
+objects:
+  - external_key: example-rifle
+    object_type: weapon
+    name: Example Rifle
+    description: Replace this with permitted reference data.

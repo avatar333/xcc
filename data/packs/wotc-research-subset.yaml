@@ -1,0 +1,20 @@
+slug: wotc-research-subset
+name: WotC Research Subset
+version: "1.0"
+description: Curated starter subset; expand through reviewed imports.
+objects:
+  - external_key: modular-weapons
+    object_type: research
+    name: Modular Weapons
+  - external_key: magnetic-weapons
+    object_type: research
+    name: Magnetic Weapons
+  - external_key: magnetic-rifle
+    object_type: weapon
+    name: Magnetic Rifle
+prerequisites:
+  - node: magnetic-weapons
+    prerequisite: modular-weapons
+unlocks:
+  - research: magnetic-weapons
+    unlocked: magnetic-rifle
