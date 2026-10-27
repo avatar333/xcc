@@ -32,6 +32,8 @@ def create_app(config=None):
             from flask import abort
             abort(400, description="CSRF validation failed")
     from app import models  # noqa: F401
+    from app.commands import register_commands
+    register_commands(app)
     from app.routes import (
         auth,
         avenger,

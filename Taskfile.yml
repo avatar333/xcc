@@ -1,0 +1,73 @@
+version: '3'
+
+vars:
+  PYTHON: '{{.ROOT_DIR}}/.venv/bin/python'
+  FLASK: '{{.ROOT_DIR}}/.venv/bin/flask'
+  PYTEST: '{{.ROOT_DIR}}/.venv/bin/pytest'
+  RUFF: '{{.ROOT_DIR}}/.venv/bin/ruff'
+  APP: "app:create_app()"
+
+tasks:
+  default:
+    desc: Run the complete verification suite
+    cmds:
+      - task: check
+
+  setup:
+    desc: Create the virtual environment and install development dependencies
+    cmds:
+      - python3 -m venv .venv
+      - .venv/bin/python -m pip install -e '.[dev]'
+
+  run:
+    desc: Run the Flask development server
+    cmds:
+      - '{{.FLASK}} --app "{{.APP}}" run --debug'
+
+  test:
+    desc: Run pytest
+    cmds:
+      - '{{.PYTEST}} -q'
+
+  lint:
+    desc: Run Ruff
+    cmds:
+      - '{{.RUFF}} check .'
+
+  compile:
+    desc: Compile Python sources
+    cmds:
+      - '{{.PYTHON}} -m compileall -q app tests migrations'
+
+  migration:smoke:
+    desc: Apply migrations to a temporary empty SQLite database
+    cmds:
+      - >-
+        XCOM_SKIP_SCHEMA_CREATE=1 {{.PYTHON}} -c
+        "import tempfile; from app import create_app, db; from flask_migrate import upgrade;
+        path=tempfile.mktemp(suffix='.sqlite'); app=create_app({'SQLALCHEMY_DATABASE_URI':'sqlite:///'+path});
+        app.app_context().push(); upgrade(directory='migrations'); assert 'content_pack' in db.metadata.tables;
+        print('migration smoke passed')"
+
+  seed:
+    desc: Initialize the local database and built-in reference data
+    cmds:
+      - 'XCOM_SKIP_SCHEMA_CREATE=1 {{.FLASK}} --app "{{.APP}}" bootstrap'
+
+  import-pack:
+    desc: Import a YAML content pack; pass PACK=path/to/pack.yaml
+    requires:
+      vars: [PACK]
+    cmds:
+      - >-
+        {{.PYTHON}} -c
+        "from app import create_app; from app.services.importer import import_pack;
+        app=create_app(); app.app_context().push(); import_pack('{{.PACK}}')"
+
+  check:
+    desc: Run all local quality checks
+    cmds:
+      - task: test
+      - task: lint
+      - task: compile
+      - task: migration:smoke

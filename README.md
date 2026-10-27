@@ -18,7 +18,13 @@ The development bootstrap seeds `admin` / `admin123`; change this password befor
 
 ## Database and content
 
-Use Flask-Migrate for deployed databases:
+Use the bootstrap task for a local database. It handles both a fresh database and an existing developer database created before migrations were enabled:
+
+```bash
+task seed
+```
+
+Use Flask-Migrate directly for deployed databases:
 
 ```bash
 .venv/bin/flask --app 'app:create_app()' db upgrade
@@ -27,6 +33,17 @@ Use Flask-Migrate for deployed databases:
 Curated YAML packs live in `data/packs/`. Import them from an application shell or management command using `app.services.importer.import_pack(path)`; imports are idempotent. Custom catalogue objects can be added from Catalogue and uploaded images are kept in local media storage with generated filenames.
 
 ## Tests and backup
+
+Taskfile shortcuts are available when [Task](https://taskfile.dev/) is installed:
+
+```bash
+task setup
+task run
+task check
+task import-pack PACK=data/packs/wotc-research-subset.yaml
+```
+
+The equivalent direct commands remain supported:
 
 ```bash
 .venv/bin/pytest -q
